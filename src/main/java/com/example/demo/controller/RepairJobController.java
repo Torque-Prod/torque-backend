@@ -63,10 +63,10 @@ public class RepairJobController {
         return ResponseEntity.ok(repairJobService.getJobById(id));
     }
 
-    @PostMapping("/search")
-    public ResponseEntity<PagedRepairJobResponse> searchJobs(@RequestBody GridSearchDto gridSearchDto) throws ParseException {
-        return ResponseEntity.ok(repairJobService.searchJobs(gridSearchDto));
-    }
+//    @PostMapping("/search")
+//    public ResponseEntity<PagedRepairJobResponse> searchJobs(@RequestBody GridSearchDto gridSearchDto) throws ParseException {
+//        return ResponseEntity.ok(repairJobService.searchJobs(gridSearchDto));
+//    }
 
     @GetMapping("/by-status")
     public ResponseEntity<List<RepairJobDto>> getByStatus(@RequestParam String status) {
