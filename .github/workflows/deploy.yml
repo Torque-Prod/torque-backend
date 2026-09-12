@@ -23,11 +23,15 @@ jobs:
           java-version: '16'
           cache: maven
 
-      # 3. Build Spring Boot JAR
+      # 3. Make mvnw executable (required on Linux runners)
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
+      # 4. Build Spring Boot JAR
       - name: Build JAR with Maven
         run: ./mvnw clean package -DskipTests
 
-      # 4. Set up SSH key
+      # 5. Set up SSH key
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
@@ -35,13 +39,13 @@ jobs:
           chmod 600 ~/.ssh/torque.pem
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-      # 5. Upload JAR to server
+      # 6. Upload JAR to server
       - name: Upload JAR to AWS server
         run: |
           ssh -i ~/.ssh/torque.pem ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /home/ubuntu/torque"
           scp -i ~/.ssh/torque.pem target/*.jar ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/home/ubuntu/torque/torque.jar
 
-      # 6. Restart backend service
+      # 7. Restart backend service
       - name: Restart torque service on server
         run: |
           ssh -i ~/.ssh/torque.pem ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} \
