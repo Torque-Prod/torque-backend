@@ -35,6 +35,9 @@ public class SecurityConfig {
                 .antMatchers("/api/v1/auth/**").permitAll()
                 .antMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/parts/*/image").permitAll()
                 .antMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/roles").permitAll()
+                // Public restaurant endpoints — no JWT required (used by QR-scanned customers)
+                .antMatchers("/api/restaurant/tables/public/**").permitAll()
+                .antMatchers("/api/restaurant/menu-items/public/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -70,7 +73,7 @@ public class SecurityConfig {
                 "*"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With", "X-Table-Token"));
         config.setExposedHeaders(List.of("Authorization"));
         // NOTE: allowCredentials cannot be true when allowedOriginPatterns contains "*"
         // Using false here to be compatible with wildcard, JWT in Authorization header is still passed

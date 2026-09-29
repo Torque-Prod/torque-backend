@@ -78,7 +78,8 @@ public class DataInitializer implements CommandLineRunner {
                 menuItemRepository.saveAll(Arrays.asList(
                     MenuItem.builder().label("Dashboard").icon("pi pi-home").routerLink("/web/dashboard").requiredPrivilege("").section("MAIN").orderIndex(1).build(),
                     MenuItem.builder().label("POS & Orders").icon("pi pi-shopping-cart").routerLink("/web/sales").requiredPrivilege("VIEW_INVENTORY").section("MAIN").orderIndex(2).build(),
-                    MenuItem.builder().label("Menu Management").icon("pi pi-list").routerLink("/web/restaurant-menu").requiredPrivilege("MANAGE_INVENTORY").section("MAIN").orderIndex(3).build(),
+                    MenuItem.builder().label("Tables").icon("pi pi-table").routerLink("/web/restaurant-tables").requiredPrivilege("MANAGE_INVENTORY").section("MAIN").orderIndex(3).build(),
+                    MenuItem.builder().label("Menu Management").icon("pi pi-list").routerLink("/web/restaurant-menu").requiredPrivilege("MANAGE_INVENTORY").section("MAIN").orderIndex(4).build(),
                     MenuItem.builder().label("Staff Access").icon("pi pi-id-card").routerLink("/web/staff").requiredPrivilege("MANAGE_ROLES").section("SYSTEM").orderIndex(1).build(),
                     MenuItem.builder().label("Role Management").icon("pi pi-users").routerLink("/web/roles").requiredPrivilege("MANAGE_ROLES").section("SYSTEM").orderIndex(2).build()
                 ));
