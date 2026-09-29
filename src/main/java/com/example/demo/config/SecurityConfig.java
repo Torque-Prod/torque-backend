@@ -38,6 +38,8 @@ public class SecurityConfig {
                 // Public restaurant endpoints — no JWT required (used by QR-scanned customers)
                 .antMatchers("/api/restaurant/tables/public/**").permitAll()
                 .antMatchers("/api/restaurant/menu-items/public/**").permitAll()
+                .antMatchers(org.springframework.http.HttpMethod.POST, "/api/restaurant/orders/public/**").permitAll()
+                .antMatchers(org.springframework.http.HttpMethod.GET, "/api/restaurant/table-sessions/public/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

@@ -30,6 +30,14 @@ public class RestaurantOrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
+    // ─── Public endpoint — customer QR self-order (no JWT) ─────────────────────
+    @PostMapping("/public/customer-order")
+    public ResponseEntity<RestaurantOrderDto> createCustomerOrder(
+            @RequestBody CreateOrderRequest request) {
+        RestaurantOrderDto order = orderService.createOrder(request, OrderSource.CUSTOMER_QR);
+        return ResponseEntity.status(HttpStatus.CREATED).body(order);
+    }
+
     @GetMapping("/session/{sessionId}")
     public ResponseEntity<List<RestaurantOrderDto>> getOrdersBySession(@PathVariable Long sessionId) {
         return ResponseEntity.ok(orderService.getOrdersBySession(sessionId));

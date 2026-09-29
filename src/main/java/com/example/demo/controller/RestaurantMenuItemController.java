@@ -23,9 +23,15 @@ public class RestaurantMenuItemController {
         return ResponseEntity.ok(menuItemService.getAll());
     }
 
-    // Used by POS — returns only available items
+    // Used by POS — returns only available items (JWT required)
     @GetMapping("/available")
     public ResponseEntity<List<RestaurantMenuItemDto>> getAvailable() {
+        return ResponseEntity.ok(menuItemService.getAvailable());
+    }
+
+    // ─── Public endpoint — used by QR-scanned customers (no JWT) ───────────────
+    @GetMapping("/public/available")
+    public ResponseEntity<List<RestaurantMenuItemDto>> getPublicMenu() {
         return ResponseEntity.ok(menuItemService.getAvailable());
     }
 
@@ -50,3 +56,4 @@ public class RestaurantMenuItemController {
         return ResponseEntity.noContent().build();
     }
 }
+
