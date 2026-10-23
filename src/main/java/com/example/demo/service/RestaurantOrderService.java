@@ -85,6 +85,7 @@ public class RestaurantOrderService {
                     .quantity(qty)
                     .notes(itemReq.getNotes())
                     .status(OrderItemStatus.PENDING)
+                    .station(menuItem.getStation() != null ? menuItem.getStation() : com.example.demo.entity.enums.KitchenStation.KITCHEN)
                     .build();
 
             order.getItems().add(orderItem);
@@ -209,6 +210,135 @@ public class RestaurantOrderService {
         return saleDto;
     }
 
+    // ─── KDS (Kitchen Display System) Methods ─────────────────────────────────
+
+    /**
+     * Retrieve all active kitchen orders across tables, optionally filtered by kitchen station.
+     */
+    @Transactional(readOnly = true)
+    public List<RestaurantOrderDto> getActiveKdsOrders(com.example.demo.entity.enums.KitchenStation station) {
+        List<OrderStatus> terminalStatuses = List.of(OrderStatus.SERVED, OrderStatus.CANCELLED);
+        List<RestaurantOrder> orders = orderRepository.findAllByStatusNotInOrderByCreatedAtAsc(terminalStatuses);
+
+        List<RestaurantOrderDto> result = new ArrayList<>();
+        for (RestaurantOrder order : orders) {
+            RestaurantOrderDto dto = mapToDto(order);
+
+            // Filter items by station if requested
+            if (station != null) {
+                List<RestaurantOrderDto.ItemDto> filteredItems = dto.getItems().stream()
+                        .filter(i -> i.getStation() == station)
+                        .collect(Collectors.toList());
+                dto.setItems(filteredItems);
+            }
+
+            // Keep the ticket on screen if it has at least one active item (not SERVED and not CANCELLED)
+            boolean hasActiveItems = dto.getItems().stream()
+                    .anyMatch(i -> i.getStatus() != OrderItemStatus.SERVED && i.getStatus() != OrderItemStatus.CANCELLED);
+
+            if (hasActiveItems) {
+                result.add(dto);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Bump single item: PENDING -> PREPARING -> READY -> SERVED
+     */
+    @Transactional
+    public RestaurantOrderDto bumpOrderItem(Long orderItemId) {
+        RestaurantOrderItem item = orderItemRepository.findById(orderItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Order item not found: " + orderItemId));
+
+        OrderItemStatus nextStatus;
+        switch (item.getStatus()) {
+            case PENDING:
+                nextStatus = OrderItemStatus.PREPARING;
+                break;
+            case PREPARING:
+                nextStatus = OrderItemStatus.READY;
+                break;
+            case READY:
+            default:
+                nextStatus = OrderItemStatus.SERVED;
+                break;
+        }
+
+        return updateItemStatus(orderItemId, nextStatus);
+    }
+
+    /**
+     * Bump entire order ticket: advances all unserved items to next stage.
+     */
+    @Transactional
+    public RestaurantOrderDto bumpEntireOrder(Long orderId, com.example.demo.entity.enums.KitchenStation station) {
+        RestaurantOrder order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+
+        List<RestaurantOrderItem> targetItems = order.getItems().stream()
+                .filter(i -> station == null || i.getStation() == station)
+                .filter(i -> i.getStatus() != OrderItemStatus.CANCELLED && i.getStatus() != OrderItemStatus.SERVED)
+                .collect(Collectors.toList());
+
+        if (targetItems.isEmpty()) {
+            return mapToDto(order);
+        }
+
+        boolean hasPending = targetItems.stream().anyMatch(i -> i.getStatus() == OrderItemStatus.PENDING);
+        boolean hasPreparing = targetItems.stream().anyMatch(i -> i.getStatus() == OrderItemStatus.PREPARING);
+
+        OrderItemStatus newStatus;
+        if (hasPending) {
+            newStatus = OrderItemStatus.PREPARING;
+        } else if (hasPreparing) {
+            newStatus = OrderItemStatus.READY;
+        } else {
+            newStatus = OrderItemStatus.SERVED;
+        }
+
+        for (RestaurantOrderItem item : targetItems) {
+            item.setStatus(newStatus);
+            orderItemRepository.save(item);
+        }
+
+        // Recalculate order status
+        boolean allItemsDone = order.getItems().stream()
+                .allMatch(i -> i.getStatus() == OrderItemStatus.SERVED || i.getStatus() == OrderItemStatus.CANCELLED);
+        boolean allItemsReady = order.getItems().stream()
+                .allMatch(i -> i.getStatus() == OrderItemStatus.READY || i.getStatus() == OrderItemStatus.SERVED || i.getStatus() == OrderItemStatus.CANCELLED);
+
+        if (allItemsDone) {
+            order.setStatus(OrderStatus.SERVED);
+        } else if (allItemsReady) {
+            order.setStatus(OrderStatus.READY);
+        } else if (newStatus == OrderItemStatus.PREPARING) {
+            order.setStatus(OrderStatus.IN_PREPARATION);
+        }
+        orderRepository.save(order);
+
+        return mapToDto(order);
+    }
+
+    /**
+     * Recall recently completed order back to preparation.
+     */
+    @Transactional
+    public RestaurantOrderDto recallOrder(Long orderId) {
+        RestaurantOrder order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+
+        order.setStatus(OrderStatus.IN_PREPARATION);
+        for (RestaurantOrderItem item : order.getItems()) {
+            if (item.getStatus() == OrderItemStatus.SERVED || item.getStatus() == OrderItemStatus.READY) {
+                item.setStatus(OrderItemStatus.PREPARING);
+                orderItemRepository.save(item);
+            }
+        }
+        orderRepository.save(order);
+        return mapToDto(order);
+    }
+
     public RestaurantOrderDto mapToDto(RestaurantOrder order) {
         double itemTotal = 0.0;
         List<RestaurantOrderDto.ItemDto> itemDtos = new ArrayList<>();
@@ -227,14 +357,26 @@ public class RestaurantOrderService {
                         .quantity(item.getQuantity())
                         .notes(item.getNotes())
                         .status(item.getStatus())
+                        .station(item.getStation() != null ? item.getStation() : com.example.demo.entity.enums.KitchenStation.KITCHEN)
                         .lineTotal(lineTotal)
                         .build());
+            }
+        }
+
+        Long tableId = null;
+        String tableNumber = null;
+        if (order.getTableSession() != null) {
+            tableNumber = order.getTableSession().getTableNumber();
+            if (order.getTableSession().getRestaurantTable() != null) {
+                tableId = order.getTableSession().getRestaurantTable().getId();
             }
         }
 
         return RestaurantOrderDto.builder()
                 .id(order.getId())
                 .sessionId(order.getTableSession() != null ? order.getTableSession().getId() : null)
+                .tableId(tableId)
+                .tableNumber(tableNumber)
                 .orderNumber(order.getOrderNumber())
                 .source(order.getSource())
                 .status(order.getStatus())

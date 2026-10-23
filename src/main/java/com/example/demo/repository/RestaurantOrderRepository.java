@@ -20,4 +20,6 @@ public interface RestaurantOrderRepository extends JpaRepository<RestaurantOrder
     long countOrdersSince(@Param("startOfDay") LocalDateTime startOfDay);
 
     List<RestaurantOrder> findAllByTableSessionIdAndStatusNot(Long sessionId, OrderStatus status);
+
+    List<RestaurantOrder> findAllByStatusNotInOrderByCreatedAtAsc(List<OrderStatus> statuses);
 }

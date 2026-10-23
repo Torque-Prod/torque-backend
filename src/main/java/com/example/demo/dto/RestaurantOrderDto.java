@@ -19,6 +19,8 @@ public class RestaurantOrderDto {
 
     private Long id;
     private Long sessionId;
+    private Long tableId;
+    private String tableNumber;
     private String orderNumber;
     private OrderSource source;
     private OrderStatus status;
@@ -39,6 +41,7 @@ public class RestaurantOrderDto {
         private int quantity;
         private String notes;
         private OrderItemStatus status;
+        private com.example.demo.entity.enums.KitchenStation station;
         private double lineTotal;
     }
 }

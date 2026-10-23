@@ -80,6 +80,7 @@ public class DataInitializer implements CommandLineRunner {
                     MenuItem.builder().label("POS & Orders").icon("pi pi-shopping-cart").routerLink("/web/sales").requiredPrivilege("VIEW_INVENTORY").section("MAIN").orderIndex(2).build(),
                     MenuItem.builder().label("Tables").icon("pi pi-table").routerLink("/web/restaurant-tables").requiredPrivilege("MANAGE_INVENTORY").section("MAIN").orderIndex(3).build(),
                     MenuItem.builder().label("Menu Management").icon("pi pi-list").routerLink("/web/restaurant-menu").requiredPrivilege("MANAGE_INVENTORY").section("MAIN").orderIndex(4).build(),
+                    MenuItem.builder().label("Kitchen Display").icon("pi pi-desktop").routerLink("/web/kds").requiredPrivilege("VIEW_INVENTORY").section("MAIN").orderIndex(5).build(),
                     MenuItem.builder().label("Staff Access").icon("pi pi-id-card").routerLink("/web/staff").requiredPrivilege("MANAGE_ROLES").section("SYSTEM").orderIndex(1).build(),
                     MenuItem.builder().label("Role Management").icon("pi pi-users").routerLink("/web/roles").requiredPrivilege("MANAGE_ROLES").section("SYSTEM").orderIndex(2).build()
                 ));
@@ -96,6 +97,20 @@ public class DataInitializer implements CommandLineRunner {
                     MenuItem.builder().label("Role Management").icon("pi pi-users").routerLink("/web/roles").requiredPrivilege("MANAGE_ROLES").section("SYSTEM").orderIndex(3).build()
                 ));
             }
+        }
+
+        // Ensure Kitchen Display link exists
+        if (!menuItemRepository.existsByRouterLink("/web/kds")) {
+            menuItemRepository.save(
+                MenuItem.builder()
+                    .label("Kitchen Display")
+                    .icon("pi pi-desktop")
+                    .routerLink("/web/kds")
+                    .requiredPrivilege("VIEW_INVENTORY")
+                    .section("MAIN")
+                    .orderIndex(5)
+                    .build()
+            );
         }
     }
 }

@@ -64,4 +64,29 @@ public class RestaurantOrderController {
         SaleDto sale = orderService.checkoutSession(sessionId, checkoutReq);
         return ResponseEntity.ok(sale);
     }
+
+    // ─── KDS Endpoints ─────────────────────────────────────────────────────────
+
+    @GetMapping("/kds/active")
+    public ResponseEntity<List<RestaurantOrderDto>> getActiveKdsOrders(
+            @RequestParam(required = false) com.example.demo.entity.enums.KitchenStation station) {
+        return ResponseEntity.ok(orderService.getActiveKdsOrders(station));
+    }
+
+    @PatchMapping("/kds/items/{itemId}/bump")
+    public ResponseEntity<RestaurantOrderDto> bumpOrderItem(@PathVariable Long itemId) {
+        return ResponseEntity.ok(orderService.bumpOrderItem(itemId));
+    }
+
+    @PatchMapping("/kds/{orderId}/bump")
+    public ResponseEntity<RestaurantOrderDto> bumpEntireOrder(
+            @PathVariable Long orderId,
+            @RequestParam(required = false) com.example.demo.entity.enums.KitchenStation station) {
+        return ResponseEntity.ok(orderService.bumpEntireOrder(orderId, station));
+    }
+
+    @PatchMapping("/kds/{orderId}/recall")
+    public ResponseEntity<RestaurantOrderDto> recallOrder(@PathVariable Long orderId) {
+        return ResponseEntity.ok(orderService.recallOrder(orderId));
+    }
 }

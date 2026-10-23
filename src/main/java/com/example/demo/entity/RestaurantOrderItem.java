@@ -49,6 +49,11 @@ public class RestaurantOrderItem {
     @Builder.Default
     private OrderItemStatus status = OrderItemStatus.PENDING;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private com.example.demo.entity.enums.KitchenStation station = com.example.demo.entity.enums.KitchenStation.KITCHEN;
+
     // Computed helper — not persisted
     @Transient
     public double getLineTotal() {

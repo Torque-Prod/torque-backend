@@ -36,6 +36,11 @@ public class RestaurantMenuItem {
     @Builder.Default
     private Boolean available = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private com.example.demo.entity.enums.KitchenStation station = com.example.demo.entity.enums.KitchenStation.KITCHEN;
+
     @Lob
     @Column(name = "image_data")
     private byte[] imageData;

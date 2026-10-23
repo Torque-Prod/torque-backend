@@ -79,7 +79,7 @@ public class MenuService {
             }
         } else {
             // Exclude Restaurant specific items
-            if (link.contains("restaurant-tables") || link.contains("restaurant-menu")) {
+            if (link.contains("restaurant-tables") || link.contains("restaurant-menu") || link.contains("kds")) {
                 return false;
             }
         }

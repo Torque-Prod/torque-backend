@@ -17,6 +17,7 @@ public class RestaurantMenuItemDto {
     private Long categoryId;
     private String categoryName;
     private Boolean available;
+    private com.example.demo.entity.enums.KitchenStation station;
     private String imageType;
     // imageData is returned as base64 string for the frontend
     private String imageBase64;

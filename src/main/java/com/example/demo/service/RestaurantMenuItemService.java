@@ -54,6 +54,9 @@ public class RestaurantMenuItemService {
         entity.setDescription(dto.getDescription());
         entity.setPrice(dto.getPrice());
         entity.setAvailable(dto.getAvailable() != null ? dto.getAvailable() : true);
+        if (dto.getStation() != null) {
+            entity.setStation(dto.getStation());
+        }
 
         if (dto.getCategoryId() != null) {
             RestaurantCategory category = categoryRepository.findById(dto.getCategoryId())
@@ -81,6 +84,7 @@ public class RestaurantMenuItemService {
                 .categoryId(m.getCategory() != null ? m.getCategory().getId() : null)
                 .categoryName(m.getCategory() != null ? m.getCategory().getName() : null)
                 .available(m.getAvailable())
+                .station(m.getStation())
                 .imageType(m.getImageType())
                 .imageBase64(base64)
                 .build();
