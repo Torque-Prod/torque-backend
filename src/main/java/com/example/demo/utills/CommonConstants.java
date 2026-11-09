@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.papertrl.common.utils;
+package com.example.demo.utills;
 
 
 import java.io.Serializable;

@@ -6,7 +6,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 import static com.example.demo.utills.TableConstant.*;
-import static com.papertrl.common.utils.CommonConstants.*;
+import static com.example.demo.utills.CommonConstants.*;
 
 
 @Data
@@ -15,7 +15,6 @@ public class Filter<T> implements Serializable {
     private String matchMode;
 
     public Object getFormattedValue() {
-        com.papertrl.common.utils.CommonConstants CommonConstants;
         if (null == value || value.equals(EMPTY_STRING)) {
             return null;
         } else if (STARTS_WITH.equalsIgnoreCase(matchMode)) {

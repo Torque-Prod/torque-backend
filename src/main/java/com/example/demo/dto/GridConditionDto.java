@@ -2,8 +2,8 @@ package com.example.demo.dto;
 
 
 import com.example.demo.utills.TableConstant;
-import com.papertrl.common.utils.CommonConstants;
-import static com.papertrl.common.utils.CommonConstants.SQL_AND_CONDITION;
+import com.example.demo.utills.CommonConstants;
+import static com.example.demo.utills.CommonConstants.SQL_AND_CONDITION;
 import java.io.Serializable;
 import java.util.HashMap;
 import lombok.Data;

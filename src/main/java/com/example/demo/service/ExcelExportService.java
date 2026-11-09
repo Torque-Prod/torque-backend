@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -16,9 +17,10 @@ import java.util.List;
 public class ExcelExportService {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private static final String[] HEADERS = {
-        "Job Number", "Customer", "Phone",
+        "Job Number", "Created Date", "Customer", "Phone",
         "Item Name", "Model Number", "Serial Number",
         "Problem Description", "Technician",
         "Received Date", "Expected Date",
@@ -87,22 +89,23 @@ public class ExcelExportService {
                 CellStyle base = alt ? altRowStyle : normalStyle;
 
                 writeCell(row, 0, job.getJobNumber(),                                    base);
-                writeCell(row, 1, job.getCustomerName(),                                 base);
-                writeCell(row, 2, job.getCustomerPhone(),                                base);
-                writeCell(row, 3, job.getItemName(),                                     base);
-                writeCell(row, 4, job.getModelNumber(),                                  base);
-                writeCell(row, 5, job.getSerialNumber(),                                 base);
-                writeCell(row, 6, job.getProblemDescription(),                           base);
-                writeCell(row, 7, job.getTechnicianName(),                               base);
-                writeDateCell(row, 8,  job.getReceivedDate(),  dateStyle);
-                writeDateCell(row, 9,  job.getExpectedDate(),  dateStyle);
-                writeCell(row, 10, job.getStatus(),                                      base);
-                writeNumericCell(row, 11, job.getServiceCharge() != null ? job.getServiceCharge() : 0.0, currencyStyle);
-                writeNumericCell(row, 12, job.getPartsTotal()    != null ? job.getPartsTotal()    : 0.0, currencyStyle);
-                writeNumericCell(row, 13, job.getNetTotal()      != null ? job.getNetTotal()      : 0.0, currencyStyle);
+                writeDateTimeCell(row, 1, job.getCreatedAt(),                            dateStyle);
+                writeCell(row, 2, job.getCustomerName(),                                 base);
+                writeCell(row, 3, job.getCustomerPhone(),                                base);
+                writeCell(row, 4, job.getItemName(),                                     base);
+                writeCell(row, 5, job.getModelNumber(),                                  base);
+                writeCell(row, 6, job.getSerialNumber(),                                 base);
+                writeCell(row, 7, job.getProblemDescription(),                           base);
+                writeCell(row, 8, job.getTechnicianName(),                               base);
+                writeDateCell(row, 9,  job.getReceivedDate(),  dateStyle);
+                writeDateCell(row, 10, job.getExpectedDate(),  dateStyle);
+                writeCell(row, 11, job.getStatus(),                                      base);
+                writeNumericCell(row, 12, job.getServiceCharge() != null ? job.getServiceCharge() : 0.0, currencyStyle);
+                writeNumericCell(row, 13, job.getPartsTotal()    != null ? job.getPartsTotal()    : 0.0, currencyStyle);
+                writeNumericCell(row, 14, job.getNetTotal()      != null ? job.getNetTotal()      : 0.0, currencyStyle);
 
                 // Paid column — styled Yes/No
-                Cell paidCell = row.createCell(14);
+                Cell paidCell = row.createCell(15);
                 boolean paid  = job.isPaid();
                 paidCell.setCellValue(paid ? "Yes" : "No");
                 paidCell.setCellStyle(paid ? paidStyle : unpaidStyle);
@@ -135,6 +138,12 @@ public class ExcelExportService {
     private void writeDateCell(Row row, int col, LocalDate date, CellStyle style) {
         Cell cell = row.createCell(col);
         cell.setCellValue(date != null ? date.format(DATE_FMT) : "");
+        cell.setCellStyle(style);
+    }
+
+    private void writeDateTimeCell(Row row, int col, LocalDateTime dateTime, CellStyle style) {
+        Cell cell = row.createCell(col);
+        cell.setCellValue(dateTime != null ? dateTime.format(DATETIME_FMT) : "");
         cell.setCellStyle(style);
     }
 

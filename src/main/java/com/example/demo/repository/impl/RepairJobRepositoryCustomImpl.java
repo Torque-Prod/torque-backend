@@ -84,6 +84,31 @@ public class RepairJobRepositoryCustomImpl implements RepairJobRepositoryCustom 
                 where.append(" AND rp.is_paid = ?");
                 params.add(f.get("paid").getValue());
             }
+            if (hasValue(f.get("createdAt"))) {
+                String dateVal = f.get("createdAt").getValue().toString().trim();
+                if (dateVal.contains("T")) {
+                    dateVal = dateVal.substring(0, dateVal.indexOf("T"));
+                }
+                where.append(" AND DATE(rp.created_at) = ?");
+                params.add(dateVal);
+            } else if (hasValue(f.get("createdDate"))) {
+                String dateVal = f.get("createdDate").getValue().toString().trim();
+                if (dateVal.contains("T")) {
+                    dateVal = dateVal.substring(0, dateVal.indexOf("T"));
+                }
+                where.append(" AND DATE(rp.created_at) = ?");
+                params.add(dateVal);
+            } else if (dto.getStartDate() != null && !dto.getStartDate().isBlank()) {
+                where.append(" AND rp.created_at >= ?");
+                params.add(dto.getStartDate().trim() + " 00:00:00");
+                if (dto.getEndDate() != null && !dto.getEndDate().isBlank()) {
+                    where.append(" AND rp.created_at <= ?");
+                    params.add(dto.getEndDate().trim() + " 23:59:59");
+                }
+            } else if (dto.getEndDate() != null && !dto.getEndDate().isBlank()) {
+                where.append(" AND rp.created_at <= ?");
+                params.add(dto.getEndDate().trim() + " 23:59:59");
+            }
         }
 
         // Count query
@@ -164,6 +189,7 @@ public class RepairJobRepositoryCustomImpl implements RepairJobRepositoryCustom 
                     .status((String) row[13])
                     .serviceCharge(serviceCharge)
                     .paid(toBoolean(row[15]))
+                    .createdAt(toLocalDateTime(row[16]))
                     .partsTotal(partsTotal)
                     .netTotal(serviceCharge + partsTotal)
                     .usedParts(new ArrayList<>())
@@ -184,6 +210,14 @@ public class RepairJobRepositoryCustomImpl implements RepairJobRepositoryCustom 
         if (value == null) return null;
         if (value instanceof LocalDate ld) return ld;
         if (value instanceof java.sql.Date d) return d.toLocalDate();
+        return null;
+    }
+
+    private LocalDateTime toLocalDateTime(Object value) {
+        if (value == null) return null;
+        if (value instanceof LocalDateTime ldt) return ldt;
+        if (value instanceof java.sql.Timestamp ts) return ts.toLocalDateTime();
+        if (value instanceof java.util.Date d) return new java.sql.Timestamp(d.getTime()).toLocalDateTime();
         return null;
     }
 
@@ -213,6 +247,7 @@ public class RepairJobRepositoryCustomImpl implements RepairJobRepositoryCustom 
             case "status"         -> "rp.status";
             case "netTotal"       -> "(rp.service_charge + COALESCE(parts_total,0))";
             case "receivedDate"   -> "rp.received_date";
+            case "createdAt", "createdDate" -> "rp.created_at";
             default               -> "rp.created_at";
         };
     }
